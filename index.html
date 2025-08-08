@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PressCanvas — Portfolio</title>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Fira+Sans:wght@300;400;500;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /*
+      PressCanvas — Newspaper x Canvas portfolio (Refined + Interactive)
+      --------------------------------------------------
+      • New: theme switcher (Newsprint, Sepia, Night)
+      • New: project tag filters + dynamic rendering from JS data
+      • New: lightbox modal with keyboard support
+      • New: active section highlight, scroll progress bar
+      • New: tilt-on-hover for project frames
+    */
+
+    :root {
+      /* Colors — Newspaper-inspired (Newsprint/default) */
+      --bg-primary: #FAF9F6;
+      --bg-secondary: #F5F3EE;
+      --bg-canvas: #FFFFFF;
+      --bg-inset: #EFEDE6;
+
+      --text-primary: #1A1A1A;
+      --text-secondary: #4B4B4B;
+      --text-muted: #7A7A7A;
+      --text-accent: #A62317;
+
+      --border-light: #D0CFCB;
+      --border-medium: #B0AEAA;
+      --border-dark: #7D7B76;
+
+      --accent-highlight: #E6D5B8;
+      --accent-shadow: #C4B69C;
+      --accent-ink: #101010;
+
+      /* Type */
+      --font-headline: 'Playfair Display', serif;
+      --font-body: 'Merriweather', serif;
+      --font-accent: 'Fira Sans', sans-serif;
+      --font-mono: 'Courier Prime', monospace;
+
+      /* Scale */
+      --size-xs: .75rem; --size-sm: .875rem; --size-md: 1rem; --size-lg: 1.25rem; --size-xl: 1.5rem; --size-2xl: 2rem; --size-3xl: 3rem;
+
+      /* Spacing */
+      --space-xxs: .25rem; --space-xs: .5rem; --space-sm: .75rem; --space-md: 1rem; --space-lg: 1.5rem; --space-xl: 2rem; --space-2xl: 3rem; --space-3xl: 4rem;
+
+      /* Borders & Shadows */
+      --radius-none: 0px; --radius-sm: 2px; --radius-md: 4px; --radius-lg: 8px;
+      --border-thin: 1px; --border-med: 2px; --border-thick: 4px;
+      --shadow-ink: 0 2px 4px rgba(0,0,0,.20); --shadow-soft: 0 4px 12px rgba(0,0,0,.10); --shadow-paper: 0 6px 24px rgba(0,0,0,.15);
+
+      /* Motion */
+      --ease-smooth: cubic-bezier(0.25, 1, 0.5, 1);
+      --dur-fast: .45s; --dur-base: .8s; --dur-slow: 1.2s;
+
+      /* Layout */
+      --maxw: 1100px;
+
+      /* Lightbox */
+      --overlay: rgba(10,10,10,.6);
+    }
+
+    /* Theme: Sepia */
+    .theme-sepia {
+      --bg-primary: #F6F1E7;
+      --bg-secondary: #EFE8DB;
+      --bg-inset: #E7DECD;
+      --text-primary: #221E1A;
+      --text-secondary: #534B44;
+      --text-muted: #7A6E64;
+      --text-accent: #8C2C1F;
+      --border-light: #D6CFC4; --border-medium: #B9B0A3; --border-dark: #847A6D;
+      --accent-highlight: #E4CFAF; --accent-shadow: #C9B690;
+    }
+
+    /* Theme: Night */
+    .theme-night {
+      --bg-primary: #0E0F10;
+      --bg-secondary: #121416;
+      --bg-canvas: #16181B;
+      --bg-inset: #0B0C0D;
+      --text-primary: #ECECEC;
+      --text-secondary: #B8B8B8;
+      --text-muted: #8E8E8E;
+      --text-accent: #E05A4F;
+      --border-light: #2B2E33; --border-medium: #3A3F45; --border-dark: #4A5159;
+      --accent-highlight: #2B2A28; --accent-shadow: #1F1E1D;
+      --overlay: rgba(240,240,240,.15);
+    }
+
+    /* Base */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; color: var(--text-primary); background: var(--bg-primary);
+      font-family: var(--font-body); line-height: 1.6;
+      background-image:
+        radial-gradient( rgba(0,0,0,0.03) 1px, transparent 1px ),
+        radial-gradient( rgba(0,0,0,0.02) .5px, transparent .5px ),
+        linear-gradient(0deg, rgba(0,0,0,0.04), rgba(0,0,0,0));
+      background-size: 24px 24px, 12px 12px, 100% 100%;
+      background-position: 0 0, 12px 12px, 0 0;
+      scroll-behavior: smooth; scroll-snap-type: y mandatory; overflow-y: scroll;
+    }
+
+    a { color: var(--text-accent); text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    .container { width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 var(--space-md); }
+
+    /* Progress bar */
+    #progressBar { position: fixed; top: 0; left: 0; height: 3px; background: var(--text-accent); width: 0; z-index: 50; box-shadow: 0 1px 0 rgba(0,0,0,.15); }
+
+    /* Sections (pages) */
+    section.page { position: relative; min-height: 100svh; display: grid; align-items: center; scroll-snap-align: start; background: var(--bg-secondary);
+      border-top: var(--border-thin) solid var(--border-light); border-bottom: var(--border-thin) solid var(--border-light);
+      box-shadow: inset 0 1px 0 rgba(0,0,0,.04), inset 0 -1px 0 rgba(0,0,0,.04); perspective: 1200px; }
+    section.page:nth-child(odd) { background: var(--bg-primary); }
+    section.page::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(180deg, rgba(0,0,0,0.04) 0, transparent 40%, transparent 60%, rgba(0,0,0,0.03) 100%); opacity: .5; }
+
+    /* Masthead */
+    .masthead { position: fixed; top: .75rem; left: .75rem; z-index: 40; background: var(--bg-canvas); border: var(--border-thin) solid var(--border-light);
+      box-shadow: var(--shadow-soft); font-family: var(--font-mono); font-size: var(--size-xs); padding: .35rem .5rem; border-radius: var(--radius-sm);
+      text-transform: uppercase; letter-spacing: .06em; color: var(--text-secondary); display:flex; align-items:center; gap:.5rem; }
+    .masthead .sep { opacity:.4; }
+
+    /* Theme switcher */
+    .controls { display:flex; align-items:center; gap:.35rem; }
+    .select { font-family: var(--font-mono); font-size: var(--size-xs); padding: .2rem .4rem; border-radius: 6px; border: 1px solid var(--border-medium); background: var(--bg-canvas); color: var(--text-secondary); }
+
+    /* Headlines */
+    .headline { font-family: var(--font-headline); font-weight: 800; line-height: 1.1; font-size: clamp(2rem, 5vw, 4rem); margin: 0 0 var(--space-sm) 0; position: relative; }
+
+    /* Ink hover smudge */
+    .ink-headline { position: relative; display: inline-block; }
+    .ink-headline::after { content: ""; position: absolute; inset: -10% -6%; z-index: -1; background: radial-gradient(ellipse at center, rgba(16,16,16,.15), rgba(16,16,16,0) 60%);
+      transform: scale(.2); opacity: 0; transition: transform var(--dur-base) var(--ease-smooth), opacity var(--dur-base) ease; filter: blur(6px); }
+    .ink-headline:hover::after { transform: scale(1); opacity: 1; }
+
+    .lede { font-family: var(--font-accent); color: var(--text-secondary); font-size: clamp(1rem, 2.2vw, 1.25rem); }
+
+    /* Drop cap */
+    .dropcap:first-letter { float: left; font-family: var(--font-headline); font-weight: 700; font-size: 4.2rem; line-height: .85; padding: .1rem .5rem .1rem 0; color: var(--text-primary); }
+
+    /* Cards and framed images */
+    .frame { background: var(--bg-canvas); border: var(--border-thin) solid var(--border-light); box-shadow: var(--shadow-paper); border-radius: var(--radius-md); transform-style: preserve-3d; will-change: transform; }
+
+    .tag { display: inline-block; font-family: var(--font-mono); font-size: var(--size-xs); border: 1px solid var(--border-medium); color: var(--text-secondary); padding: .15rem .4rem; border-radius: 999px; background: var(--bg-canvas); }
+
+    /* Grid helpers */
+    .grid { display: grid; gap: var(--space-lg); }
+    .two-col { grid-template-columns: 1fr 1fr; }
+    .three-col { grid-template-columns: repeat(3, 1fr); }
+    @media (max-width: 900px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+    
+    /* Large screen enhancements */
+    @media (min-width: 1200px) {
+      .two-col { grid-template-columns: 1fr 1.4fr; gap: var(--space-2xl); }
+      .container { max-width: 1400px; }
+      
+      /* Enhanced article styling for large screens */
+      #about .frame { padding: var(--space-2xl) !important; }
+      #about .headline { font-size: clamp(2rem, 4vw, 4.5rem) !important; }
+      #about .dropcap:first-letter { font-size: 5rem; }
+      #about p { font-size: var(--size-lg); line-height: 1.7; }
+      #about .tag { font-size: var(--size-sm); padding: .25rem .6rem; }
+    }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; gap: .5rem; font-family: var(--font-accent); font-weight: 500; font-size: var(--size-sm);
+      padding: .6rem 1rem; border-radius: var(--radius-sm); border: var(--border-thin) solid var(--border-medium); background: var(--bg-canvas); color: var(--text-primary);
+      box-shadow: var(--shadow-ink); transition: transform var(--dur-fast) var(--ease-smooth), background var(--dur-fast) ease; cursor: pointer; }
+    .btn:hover { background: var(--accent-highlight); transform: translateY(-1px); }
+    .btn.pill { border-radius: 999px; }
+    .btn.active { background: var(--text-accent); color: #fff; border-color: transparent; }
+
+    /* Animations */
+    .reveal { opacity: 0; transform: translateY(10px); }
+    .in-view.reveal { opacity: 1; transform: none; transition: opacity var(--dur-base) ease, transform var(--dur-base) var(--ease-smooth); }
+    .reveal-slide { opacity: 0; transform: translateY(24px); }
+    .in-view.reveal-slide { opacity: 1; transform: translateY(0); transition: opacity var(--dur-base) ease, transform var(--dur-base) var(--ease-smooth); }
+    .paper-flip { transform: rotateY(-12deg) translateZ(0); transform-origin: left center; opacity: 0; }
+    .in-view.paper-flip { opacity: 1; transform: rotateY(0); transition: transform var(--dur-slow) var(--ease-smooth), opacity var(--dur-slow) ease; }
+    .ink-spread { position: relative; }
+    .ink-spread::before { content: ""; position: absolute; left: -6%; right: -6%; top: 60%; height: 20%; z-index: -1; background: radial-gradient(ellipse at center, rgba(166,35,23,.18), rgba(166,35,23,0) 70%);
+      transform: scaleX(.2); opacity: 0; filter: blur(6px); transition: transform var(--dur-base) var(--ease-smooth), opacity var(--dur-base) ease; }
+    .in-view.ink-spread::before { opacity: 1; transform: scaleX(1); }
+
+    /* Hero */
+    #hero .hero-wrap { padding: var(--space-2xl) 0; align-self: center; }
+    #hero .kicker { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .12em; color: var(--text-muted); font-size: var(--size-xs); }
+
+    /* About */
+    #about .portrait { aspect-ratio: 4/5; background: #ddd; border-radius: var(--radius-md); background-image: url('assets/images/portraits/profile.jpg'); background-size: cover; background-position: center; filter: grayscale(100%) contrast(1.05); border: var(--border-thin) solid var(--border-dark); box-shadow: var(--shadow-paper); }
+
+    /* Projects */
+    .filters { display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom: var(--space-md); }
+    .projects-grid { grid-template-columns: repeat(12, 1fr); gap: var(--space-lg); }
+    .project-card { grid-column: span 4; display: flex; flex-direction: column; gap: .5rem; }
+    .project-card .frame { overflow: hidden; }
+    .project-card img { transform: scale(1.02); transition: transform var(--dur-base) var(--ease-smooth); }
+    .project-card:hover img { transform: scale(1.06); }
+    .caption { font-family: var(--font-mono); color: var(--text-secondary); font-size: var(--size-xs); }
+    .hidden { display: none !important; }
+
+    @media (max-width: 1100px) { .project-card { grid-column: span 6; } }
+    @media (max-width: 700px) { .project-card { grid-column: span 12; } }
+
+    /* Info blocks */
+    .info-grid { grid-template-columns: repeat(12, 1fr); gap: var(--space-lg); }
+    .info { grid-column: span 6; background: var(--bg-canvas); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: var(--space-lg); box-shadow: var(--shadow-soft); }
+    .info h3 { margin: 0 0 .5rem 0; font-family: var(--font-headline); }
+    .info p { margin: 0; color: var(--text-secondary); }
+    @media (max-width: 900px) { .info { grid-column: span 12; } }
+
+    /* Contact */
+    .classified { background: var(--bg-inset); border: 1px dashed var(--border-dark); padding: var(--space-lg); border-radius: var(--radius-sm); box-shadow: var(--shadow-paper); }
+    .classified h2 { margin-top: 0; }
+    .form { display:grid; gap: .75rem; }
+    .input { font-family: var(--font-accent); font-size: var(--size-sm); padding:.6rem .75rem; border:1px solid var(--border-medium); border-radius:8px; background: var(--bg-canvas); color: var(--text-primary); }
+
+    /* Top navigation */
+    .topnav { position: fixed; right: .75rem; top: .75rem; z-index: 40; display: flex; gap: .35rem; flex-wrap: wrap; max-width: 44vw; justify-content: flex-end; }
+    .topnav a { border: 1px solid var(--border-medium); background: var(--bg-canvas); padding: .25rem .5rem; border-radius: 999px; font-family: var(--font-mono); font-size: var(--size-xs); color: var(--text-secondary); }
+    .topnav a:hover { background: var(--accent-highlight); color: var(--text-primary); }
+    .topnav a.active { background: var(--text-accent); color:#fff; border-color: transparent; }
+
+    /* Lightbox */
+    .lightbox { position: fixed; inset: 0; background: var(--overlay); display: grid; place-items: center; opacity: 0; visibility: hidden; transition: opacity var(--dur-base) ease, visibility var(--dur-base) ease; z-index: 60; }
+    .lightbox.open { opacity: 1; visibility: visible; }
+    .lightbox-dialog { background: var(--bg-canvas); color: var(--text-primary); border-radius: 12px; box-shadow: var(--shadow-paper); width: min(92vw, 980px); max-height: 86vh; overflow: hidden; display: grid; grid-template-rows: auto 1fr auto; border:1px solid var(--border-light); }
+    .lightbox-header, .lightbox-footer { padding: .6rem .9rem; border-bottom:1px solid var(--border-light); display:flex; align-items:center; justify-content: space-between; gap:.5rem; }
+    .lightbox-footer { border-top:1px solid var(--border-light); border-bottom:none; }
+    .lightbox-body { padding: .75rem .9rem; overflow:auto; }
+    .lightbox img { width: 100%; height: auto; border-radius: 8px; }
+    .iconbtn { background: transparent; border:1px solid var(--border-medium); border-radius:8px; padding:.35rem .55rem; cursor:pointer; color: var(--text-secondary); }
+    .iconbtn:hover { background: var(--accent-highlight); color: var(--text-primary); }
+  </style>
+</head>
+<body class="theme-newsprint">
+  <div id="progressBar"></div>
+  <div class="masthead" id="masthead">PressCanvas <span class="sep">•</span> <span id="metaDate"></span> <span class="sep">•</span> <span id="metaLocation">Istanbul</span>
+    <div class="controls" style="margin-left:.5rem;">
+      <label for="themeSel" class="sr-only" style="position:absolute;left:-9999px;">Theme</label>
+      <select id="themeSel" class="select" aria-label="Theme">
+        <option value="newsprint" selected>Newsprint</option>
+        <option value="sepia">Sepia</option>
+        <option value="night">Night</option>
+      </select>
+    </div>
+  </div>
+
+  <nav class="topnav" aria-label="Quick navigation">
+    <a href="#hero">Front Page</a>
+    <a href="#about">Feature</a>
+    <a href="#projects">Gallery</a>
+    <a href="#highlights">Highlights</a>
+    <a href="blogs.html">Blogs</a>
+    <a href="#contact">Contact</a>
+  </nav>
+
+  <!-- Front Page / Hero -->
+  <section id="hero" class="page">
+    <div class="container hero-wrap">
+      <div class="kicker reveal">The Sunday Arts Section</div>
+      <h1 class="headline ink-headline ink-spread reveal" style="max-width: 16ch;">Abdullah Talat — Portfolio</h1>
+      <p class="lede reveal-slide" style="max-width: 60ch;">Designer • Developer • Storyteller. A portfolio staged like a newspaper, set in a quiet gallery. Turn the page and wander.</p>
+      <div style="margin-top: var(--space-lg);">
+        <a class="btn reveal" href="#projects">View Selected Work →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature Story / About -->
+  <section id="about" class="page">
+    <div class="container">
+      <div class="grid two-col" style="align-items: start;">
+        <div class="portrait paper-flip" aria-label="Portrait image"></div>
+        <article class="frame" style="padding: var(--space-lg);">
+          <h2 class="headline reveal ink-spread" style="font-size: clamp(1.8rem, 3.8vw, 4rem);">Feature Story</h2>
+          <p class="dropcap reveal-slide">I design and build thoughtful, minimal experiences that feel like print—measured rhythms, honest typography, and animations that whisper rather than shout. My work blends research, interaction, and editorial craft.</p>
+          <p class="reveal-slide">Recent focus: local‑first tools, AI‑assisted knowledge systems, and expressive interfaces that invite exploration.</p>
+          <div style="margin-top: var(--space-md); display:flex; gap:.5rem; flex-wrap:wrap;">
+            <span class="tag reveal">Design Systems</span>
+            <span class="tag reveal">UX Writing</span>
+            <span class="tag reveal">Wails / Go / React</span>
+            <span class="tag reveal">LLM + RAG</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery Spread / Projects (Dynamic) -->
+  <section id="projects" class="page">
+    <div class="container">
+      <h2 class="headline reveal ink-spread" style="font-size: clamp(1.8rem, 3.8vw, 3rem);">Gallery Spread</h2>
+      <div class="filters" role="group" aria-label="Filter projects by tag">
+        <button class="btn pill" data-filter="all">All</button>
+        <button class="btn pill" data-filter="design">Design</button>
+        <button class="btn pill" data-filter="dev">Development</button>
+        <button class="btn pill" data-filter="research">Research</button>
+        <button class="btn pill" data-filter="ai">AI</button>
+        <button class="btn pill" data-filter="systems">Systems</button>
+      </div>
+      <div id="projectsGrid" class="grid projects-grid" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- Editorial Highlights / Skills & Achievements -->
+  <section id="highlights" class="page">
+    <div class="container">
+      <h2 class="headline reveal ink-spread" style="font-size: clamp(1.8rem, 3.8vw, 3rem);">Editorial Highlights</h2>
+      <div class="grid info-grid">
+        <div class="info paper-flip">
+          <h3>Design System Craft</h3>
+          <p>Token-driven theming, semantic components, and accessible motion that scales.</p>
+        </div>
+        <div class="info paper-flip">
+          <h3>Research to Pixels</h3>
+          <p>Turn qualitative/quantitative research into interaction patterns and microcopy.</p>
+        </div>
+        <div class="info paper-flip">
+          <h3>Local-first & Offline</h3>
+          <p>Patterns for resilience: optimistic UI, sync conflicts, and graceful fallbacks.</p>
+        </div>
+        <div class="info paper-flip">
+          <h3>Search & RAG</h3>
+          <p>Hybrid retrieval, chunking strategies, and transparent AI interactions.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Back Page / Contact -->
+  <section id="contact" class="page">
+    <div class="container">
+      <article class="classified paper-flip" style="max-width: 760px; margin: 0 auto;">
+        <h2 class="headline ink-headline" style="font-size: clamp(1.8rem, 3.8vw, 3rem);">Let’s Talk</h2>
+        <p class="reveal-slide" style="margin-bottom: var(--space-md);">Available for collaborations, consulting, and product design/dev engagements.</p>
+        <form id="contactForm" class="form" aria-label="Contact form">
+          <input required class="input" name="name" placeholder="Your name" />
+          <input required class="input" name="email" placeholder="Email" type="email" />
+          <textarea required class="input" name="message" placeholder="Message" rows="4"></textarea>
+          <div style="display:flex; gap:.5rem; align-items:center;">
+            <button type="submit" class="btn">Send Message</button>
+            <span id="formStatus" class="caption" aria-live="polite"></span>
+          </div>
+        </form>
+      </article>
+    </div>
+  </section>
+
+  <!-- Lightbox Modal -->
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="lbTitle">
+    <div class="lightbox-dialog">
+      <div class="lightbox-header">
+        <strong id="lbTitle" style="font-family: var(--font-headline);">Project</strong>
+        <div>
+          <button class="iconbtn" id="prevBtn" title="Previous (←)">←</button>
+          <button class="iconbtn" id="nextBtn" title="Next (→)">→</button>
+          <button class="iconbtn" id="closeBtn" title="Close (Esc)">✕</button>
+        </div>
+      </div>
+      <div class="lightbox-body">
+        <img id="lbImg" alt="Project image" />
+        <p id="lbDesc" style="margin:.75rem 0 0; font-family: var(--font-mono); color: var(--text-secondary);"></p>
+      </div>
+      <div class="lightbox-footer">
+        <span id="lbMeta" class="caption"></span>
+        <a id="lbLink" class="btn" href="#" target="_blank" rel="noopener">Open Case Study</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Utilities =====
+    const $ = (sel, root=document) => root.querySelector(sel);
+    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+    // ===== Masthead date =====
+    const metaDate = document.getElementById('metaDate');
+    const now = new Date();
+    const fmt = new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    if (metaDate) metaDate.textContent = fmt.format(now);
+
+    // ===== Progress bar =====
+    const progressBar = document.getElementById('progressBar');
+    const onScroll = () => {
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const progress = docHeight ? (scrollTop / docHeight) * 100 : 0;
+      progressBar.style.width = progress + '%';
+    };
+    document.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    // ===== Intersection observers for reveal animations =====
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in-view'); });
+    }, { threshold: 0.15 });
+    $$('.reveal, .reveal-slide, .paper-flip, .ink-spread').forEach(el => io.observe(el));
+
+    // Reduce motion preference
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (reduceMotion.matches) { $$('.reveal, .reveal-slide, .paper-flip, .ink-spread').forEach(el => el.classList.add('in-view')); }
+
+    // ===== Active section highlight in topnav =====
+    const sections = $$('.page');
+    const navLinks = $$('.topnav a');
+    const secIO = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if (entry.isIntersecting) {
+          const id = '#' + entry.target.id;
+          navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === id));
+        }
+      });
+    }, { threshold: 0.6 });
+    sections.forEach(s => secIO.observe(s));
+
+    // ===== Keyboard navigation between sections =====
+    const scrollToSection = (idx) => { sections[idx]?.scrollIntoView({ behavior:'smooth', block:'start'}); };
+    document.addEventListener('keydown', (e)=>{
+      if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+      const currentIndex = sections.findIndex(sec => {
+        const rect = sec.getBoundingClientRect();
+        return rect.top <= window.innerHeight*0.5 && rect.bottom >= window.innerHeight*0.5;
+      });
+      if (e.key === 'ArrowDown' || e.key === 'PageDown') scrollToSection(Math.min(sections.length-1, currentIndex+1));
+      if (e.key === 'ArrowUp' || e.key === 'PageUp') scrollToSection(Math.max(0, currentIndex-1));
+    });
+
+    // ===== Theme switcher =====
+    const themeSel = $('#themeSel');
+    const applyTheme = (val) => {
+      document.body.classList.remove('theme-newsprint','theme-sepia','theme-night');
+      const map = { newsprint:'theme-newsprint', sepia:'theme-sepia', night:'theme-night' };
+      document.body.classList.add(map[val] || 'theme-newsprint');
+      localStorage.setItem('presscanvas-theme', val);
+    };
+    themeSel.addEventListener('change', (e)=> applyTheme(e.target.value));
+    const savedTheme = localStorage.getItem('presscanvas-theme');
+    if (savedTheme) { themeSel.value = savedTheme; applyTheme(savedTheme); }
+
+    // ===== Projects data (could be swapped for CMS/JSON) =====
+    const projects = [
+      { title: 'Kalycs — Local-first AI search', tags:['dev','ai','systems'], img:'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1200&auto=format&fit=crop', desc:'Desktop search with hybrid retrieval, summaries, and offline-first patterns.', link:'#' },
+      { title: 'Ordeen — Knowledge hub design system', tags:['design','systems'], img:'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=1200&auto=format&fit=crop', desc:'Tokenized design language for a multi-surface knowledge app.', link:'#' },
+      { title: 'Agentic Content Bot — Research & UX', tags:['research','ai','design'], img:'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=1200&auto=format&fit=crop', desc:'Agent behaviors, prompting strategies, and UX for transparency.', link:'#' },
+      { title: 'Desktop App — Wails + React patterns', tags:['dev','systems'], img:'https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=1200&auto=format&fit=crop', desc:'Patterns for cross-platform desktop UI, updates, and packaging.', link:'#' },
+      { title: 'PDF Pipeline — Go text extraction', tags:['dev','research'], img:'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop', desc:'Robust parsing, whitespace heuristics, and benchmarking correctness.', link:'#' },
+      { title: 'Search UX — Relevance & facets', tags:['design','research'], img:'https://images.unsplash.com/photo-1547658719-da2b51169166?q=80&w=1200&auto=format&fit=crop', desc:'Faceted browse, typo tolerance, and intent-aware ranking.', link:'#' }
+    ];
+
+    // ===== Render projects =====
+    const grid = $('#projectsGrid');
+    function renderProjects(list) {
+      grid.innerHTML = list.map((p, i) => `
+        <figure class=\"project-card\" data-index=\"${i}\" data-tags=\"${p.tags.join(',')}\">\n          <div class=\"frame tilt\" tabindex=\"0\" aria-label=\"Open ${p.title}\">\n            <img src=\"${p.img}\" alt=\"${p.title}\" loading=\"lazy\" />\n          </div>\n          <figcaption class=\"caption\">${p.title} · <a href=\"${p.link}\">Details</a></figcaption>\n        </figure>
+      `).join('');
+      attachProjectInteractions();
+    }
+    renderProjects(projects);
+
+    // ===== Filters =====
+    const filterBtns = $$('.filters .btn');
+    let activeFilter = 'all';
+    function applyFilter() {
+      $$('.project-card', grid).forEach(card => {
+        const tags = card.dataset.tags.split(',');
+        const show = activeFilter === 'all' || tags.includes(activeFilter);
+        card.classList.toggle('hidden', !show);
+      });
+      filterBtns.forEach(b => b.classList.toggle('active', b.dataset.filter === activeFilter));
+    }
+    filterBtns.forEach(btn => btn.addEventListener('click', () => { activeFilter = btn.dataset.filter; applyFilter(); }));
+    applyFilter();
+
+    // ===== Lightbox =====
+    const lightbox = $('#lightbox');
+    const lbImg = $('#lbImg');
+    const lbTitle = $('#lbTitle');
+    const lbDesc = $('#lbDesc');
+    const lbMeta = $('#lbMeta');
+    const lbLink = $('#lbLink');
+    const prevBtn = $('#prevBtn');
+    const nextBtn = $('#nextBtn');
+    const closeBtn = $('#closeBtn');
+    let currentIndex = 0;
+
+    function openLightbox(index) {
+      currentIndex = index;
+      const p = projects[index];
+      lbImg.src = p.img; lbImg.alt = p.title; lbTitle.textContent = p.title; lbDesc.textContent = p.desc; lbLink.href = p.link; lbMeta.textContent = `Tags: ${p.tags.join(', ')}`;
+      lightbox.classList.add('open');
+      lightbox.setAttribute('aria-hidden','false');
+      closeBtn.focus();
+      document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+      lightbox.classList.remove('open');
+      lightbox.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+    function showDelta(delta) {
+      let idx = (currentIndex + delta + projects.length) % projects.length;
+      openLightbox(idx);
+    }
+
+    function attachProjectInteractions() {
+      $$('.project-card .frame').forEach(frame => {
+        frame.addEventListener('click', (e)=> {
+          const idx = +frame.closest('.project-card').dataset.index;
+          openLightbox(idx);
+        });
+        frame.addEventListener('keypress', (e)=> { if (e.key === 'Enter') frame.click(); });
+        // Tilt effect
+        frame.addEventListener('pointermove', (e)=>{
+          const rect = frame.getBoundingClientRect();
+          const x = (e.clientX - rect.left) / rect.width - 0.5;
+          const y = (e.clientY - rect.top) / rect.height - 0.5;
+          frame.style.transform = `rotateY(${x*6}deg) rotateX(${ -y*6 }deg)`;
+        });
+        frame.addEventListener('pointerleave', ()=> { frame.style.transform = ''; });
+      });
+    }
+
+    prevBtn.addEventListener('click', ()=> showDelta(-1));
+    nextBtn.addEventListener('click', ()=> showDelta(1));
+    closeBtn.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (e)=> { if (e.target === lightbox) closeLightbox(); });
+    document.addEventListener('keydown', (e)=>{
+      if (!lightbox.classList.contains('open')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowRight') showDelta(1);
+      if (e.key === 'ArrowLeft') showDelta(-1);
+    });
+
+    // ===== Contact form (demo) =====
+    const form = $('#contactForm');
+    const formStatus = $('#formStatus');
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      formStatus.textContent = 'Sending…';
+      await new Promise(r => setTimeout(r, 700));
+      formStatus.textContent = 'Message sent. I\'ll get back to you soon.';
+      form.reset();
+    });
+
+  </script>
+</body>
+</html>

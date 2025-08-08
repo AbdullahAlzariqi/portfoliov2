@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PressCanvas — Post</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Fira+Sans:wght@300;400;500;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #FAF9F6; --bg-secondary: #F5F3EE; --bg-canvas: #FFFFFF; --bg-inset: #EFEDE6;
+      --text-primary: #1A1A1A; --text-secondary: #4B4B4B; --text-muted: #7A7A7A; --text-accent: #A62317;
+      --border-light: #D0CFCB; --border-medium: #B0AEAA; --border-dark: #7D7B76;
+      --accent-highlight: #E6D5B8; --accent-shadow: #C4B69C; --accent-ink: #101010;
+      --font-headline: 'Playfair Display', serif; --font-body: 'Merriweather', serif; --font-accent: 'Fira Sans', sans-serif; --font-mono: 'Courier Prime', monospace;
+      --size-xs: .75rem; --size-sm: .875rem; --size-md: 1rem; --size-lg: 1.25rem; --size-xl: 1.5rem; --size-2xl: 2rem; --size-3xl: 3rem;
+      --space-xxs: .25rem; --space-xs: .5rem; --space-sm: .75rem; --space-md: 1rem; --space-lg: 1.5rem; --space-xl: 2rem; --space-2xl: 3rem; --space-3xl: 4rem;
+      --radius-sm: 2px; --radius-md: 4px; --radius-lg: 8px;
+      --border-thin: 1px; --border-med: 2px; --border-thick: 4px;
+      --shadow-ink: 0 2px 4px rgba(0,0,0,.20); --shadow-soft: 0 4px 12px rgba(0,0,0,.10); --shadow-paper: 0 6px 24px rgba(0,0,0,.15);
+      --ease-smooth: cubic-bezier(0.25, 1, 0.5, 1); --dur-fast: .45s; --dur-base: .8s; --dur-slow: 1.2s;
+      --maxw: 900px; --maxw-wide: 1200px; --overlay: rgba(10,10,10,.6);
+    }
+    /* Theme: Sepia */
+    .theme-sepia {
+      --bg-primary: #F6F1E7;
+      --bg-secondary: #EFE8DB;
+      --bg-inset: #E7DECD;
+      --text-primary: #221E1A;
+      --text-secondary: #534B44;
+      --text-muted: #7A6E64;
+      --text-accent: #8C2C1F;
+      --border-light: #D6CFC4; --border-medium: #B9B0A3; --border-dark: #847A6D;
+      --accent-highlight: #E4CFAF; --accent-shadow: #C9B690;
+    }
+    /* Theme: Night */
+    .theme-night {
+      --bg-primary: #0E0F10;
+      --bg-secondary: #121416;
+      --bg-canvas: #16181B;
+      --bg-inset: #0B0C0D;
+      --text-primary: #ECECEC;
+      --text-secondary: #B8B8B8;
+      --text-muted: #8E8E8E;
+      --text-accent: #E05A4F;
+      --border-light: #2B2E33; --border-medium: #3A3F45; --border-dark: #4A5159;
+      --accent-highlight: #2B2A28; --accent-shadow: #1F1E1D;
+      --overlay: rgba(240,240,240,.15);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin:0; color: var(--text-primary); background: var(--bg-primary); font-family: var(--font-body); line-height: 1.7;
+      background-image:
+        radial-gradient( rgba(0,0,0,0.03) 1px, transparent 1px ),
+        radial-gradient( rgba(0,0,0,0.02) .5px, transparent .5px ),
+        linear-gradient(0deg, rgba(0,0,0,0.04), rgba(0,0,0,0));
+      background-size: 24px 24px, 12px 12px, 100% 100%;
+      background-position: 0 0, 12px 12px, 0 0;
+    }
+    a { color: var(--text-accent); text-decoration: none; }
+    .container { width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 var(--space-md); }
+    @media (min-width: 1200px) { .container { max-width: var(--maxw-wide); } }
+    .masthead { position: fixed; top: .75rem; left: .75rem; z-index: 40; background: var(--bg-canvas); border: var(--border-thin) solid var(--border-light);
+      box-shadow: var(--shadow-soft); font-family: var(--font-mono); font-size: var(--size-xs); padding: .35rem .5rem; border-radius: var(--radius-sm);
+      text-transform: uppercase; letter-spacing: .06em; color: var(--text-secondary); display:flex; align-items:center; gap:.5rem; }
+    .masthead .sep { opacity:.4; }
+    /* Theme switcher */
+    .controls { display:flex; align-items:center; gap:.35rem; }
+    .select { font-family: var(--font-mono); font-size: var(--size-xs); padding: .2rem .4rem; border-radius: 6px; border: 1px solid var(--border-medium); background: var(--bg-canvas); color: var(--text-secondary); }
+    .topnav { position: fixed; right: .75rem; top: .75rem; z-index: 40; display: flex; gap: .35rem; flex-wrap: wrap; max-width: 44vw; justify-content: flex-end; }
+    .topnav a { border: 1px solid var(--border-medium); background: var(--bg-canvas); padding: .25rem .5rem; border-radius: 999px; font-family: var(--font-mono); font-size: var(--size-xs); color: var(--text-secondary); }
+    .topnav a:hover { background: var(--accent-highlight); color: var(--text-primary); }
+    .topnav a.active { background: var(--text-accent); color:#fff; border-color: transparent; }
+    .prose { background: var(--bg-canvas); border: 1px solid var(--border-light); border-radius: 12px; box-shadow: var(--shadow-paper); padding: var(--space-2xl); margin: 120px auto var(--space-2xl); }
+    h1,h2,h3 { font-family: var(--font-headline); line-height: 1.2; }
+    h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 0 0 .25rem 0; }
+    .meta { font-family: var(--font-mono); color: var(--text-secondary); font-size: var(--size-xs); margin-bottom: var(--space-md); }
+    .cover { width: 100%; height: auto; border-radius: 10px; margin: var(--space-md) 0; }
+    .content :is(p, ul, ol) { font-size: 1.05rem; color: var(--text-primary); }
+    .content pre { background: var(--bg-inset); padding: 1rem; border-radius: 8px; overflow:auto; border:1px solid var(--border-light); }
+    .content code { background: var(--bg-inset); padding: .15rem .3rem; border-radius: 4px; }
+    .tag { display: inline-block; font-family: var(--font-mono); font-size: var(--size-xs); border: 1px solid var(--border-medium); color: var(--text-secondary); padding: .15rem .4rem; border-radius: 999px; background: var(--bg-canvas); }
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+</head>
+<body class="theme-newsprint">
+  <div class="masthead">PressCanvas <span class="sep">•</span> <a href="blogs.html" style="color:inherit">Blog</a>
+    <div class="controls" style="margin-left:.5rem;">
+      <label for="themeSel" class="sr-only" style="position:absolute;left:-9999px;">Theme</label>
+      <select id="themeSel" class="select" aria-label="Theme">
+        <option value="newsprint" selected>Newsprint</option>
+        <option value="sepia">Sepia</option>
+        <option value="night">Night</option>
+      </select>
+    </div>
+  </div>
+  <nav class="topnav" aria-label="Quick navigation">
+    <a href="index.html#hero">Front Page</a>
+    <a href="index.html#about">Feature</a>
+    <a href="index.html#projects">Gallery</a>
+    <a href="index.html#highlights">Highlights</a>
+    <a class="active" href="blogs.html">Blogs</a>
+    <a href="index.html#contact">Contact</a>
+  </nav>
+
+  <main class="container">
+    <article class="prose">
+      <header>
+        <h1 id="postTitle">Loading…</h1>
+        <div id="postMeta" class="meta"></div>
+        <img id="postHero" class="cover" alt="" style="display:none;" />
+      </header>
+      <section id="postContent" class="content"></section>
+      <footer style="margin-top: var(--space-xl); display:flex; gap:.35rem; flex-wrap:wrap;" id="postTags"></footer>
+    </article>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    // Theme
+    (function(){
+      const sel = document.getElementById('themeSel');
+      const applyTheme = (val) => {
+        document.body.classList.remove('theme-newsprint','theme-sepia','theme-night');
+        const map = { newsprint:'theme-newsprint', sepia:'theme-sepia', night:'theme-night' };
+        document.body.classList.add(map[val] || 'theme-newsprint');
+        localStorage.setItem('presscanvas-theme', val);
+      };
+      sel.addEventListener('change', (e)=> applyTheme(e.target.value));
+      const saved = localStorage.getItem('presscanvas-theme');
+      if (saved) { sel.value = saved; applyTheme(saved); }
+    })();
+
+    const params = new URLSearchParams(location.search);
+    const slug = params.get('slug');
+    const titleEl = document.getElementById('postTitle');
+    const metaEl = document.getElementById('postMeta');
+    const contentEl = document.getElementById('postContent');
+    const heroEl = document.getElementById('postHero');
+    const tagsEl = document.getElementById('postTags');
+
+    async function loadIndex() {
+      const res = await fetch('assets/blog/posts.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error('index_load_failed');
+      const data = await res.json();
+      return Array.isArray(data) ? data : (data.posts || []);
+    }
+
+    async function load() {
+      if (!slug) { titleEl.textContent = 'Post not found'; return; }
+      try {
+        const posts = await loadIndex();
+        const post = posts.find(p => p.slug === slug);
+        if (!post) { titleEl.textContent = 'Post not found'; return; }
+        titleEl.textContent = post.title || slug;
+        metaEl.textContent = [post.date, post.readingTime].filter(Boolean).join(' • ');
+        if (post.hero) { heroEl.src = post.hero; heroEl.alt = post.title || ''; heroEl.style.display = 'block'; }
+        tagsEl.innerHTML = (post.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
+
+        const mdRes = await fetch(`assets/blog/${slug}.md`, { cache: 'no-store' });
+        if (!mdRes.ok) throw new Error('md_load_failed');
+        const md = await mdRes.text();
+        // Render markdown
+        contentEl.innerHTML = marked.parse(md);
+      } catch (err) {
+        console.error('post:load_error', err);
+        titleEl.textContent = 'Error loading post';
+      }
+    }
+    load();
+  </script>
+</body>
+</html>
+
+

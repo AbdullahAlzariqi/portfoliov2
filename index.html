@@ -378,7 +378,7 @@
       </div>
       <div class="lightbox-footer">
         <span id="lbMeta" class="caption"></span>
-        <a id="lbLink" class="btn" href="#" target="_blank" rel="noopener">Open Case Study</a>
+        <a id="lbLink" class="btn" href="#" target="_blank" rel="noopener">Open Project</a>
       </div>
     </div>
   </div>
@@ -455,10 +455,10 @@
     // ===== Projects data (could be swapped for CMS/JSON) =====
     const projects = [
       { title: 'Kalycs — Local-first AI search', tags:['dev','ai','systems'], img:'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1200&auto=format&fit=crop', desc:'Desktop search with hybrid retrieval, summaries, and offline-first patterns.', link:'#' },
-      { title: 'Ordeen — Knowledge hub design system', tags:['design','systems'], img:'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=1200&auto=format&fit=crop', desc:'Tokenized design language for a multi-surface knowledge app.', link:'#' },
+      { title: 'Evaluation of RAG Pipelines', tags:['rag','ai'], img:'https://plus.unsplash.com/premium_photo-1678000616480-d4a041e6eba1?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', desc:'Evaluation of RAG pipelines for question answering and retrieval in Governmental services', link:'https://open.metu.edu.tr/handle/11511/113023' },
       { title: 'Agentic Content Bot — Research & UX', tags:['research','ai','design'], img:'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=1200&auto=format&fit=crop', desc:'Agent behaviors, prompting strategies, and UX for transparency.', link:'#' },
       { title: 'Desktop App — Wails + React patterns', tags:['dev','systems'], img:'https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=1200&auto=format&fit=crop', desc:'Patterns for cross-platform desktop UI, updates, and packaging.', link:'#' },
-      { title: 'PDF Pipeline — Go text extraction', tags:['dev','research'], img:'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop', desc:'Robust parsing, whitespace heuristics, and benchmarking correctness.', link:'#' },
+      { title: 'PDF Pipeline — Go text extraction', tags:['dev','research'], img:'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop', desc:'Robust parsing, whitespace heuristics, and benchmarking correctness.', link:'https://github.com/AbdullahAlzariqi/pdf'},
       { title: 'Search UX — Relevance & facets', tags:['design','research'], img:'https://images.unsplash.com/photo-1547658719-da2b51169166?q=80&w=1200&auto=format&fit=crop', desc:'Faceted browse, typo tolerance, and intent-aware ranking.', link:'#' }
     ];
 
@@ -466,7 +466,7 @@
     const grid = $('#projectsGrid');
     function renderProjects(list) {
       grid.innerHTML = list.map((p, i) => `
-        <figure class=\"project-card\" data-index=\"${i}\" data-tags=\"${p.tags.join(',')}\">\n          <div class=\"frame tilt\" tabindex=\"0\" aria-label=\"Open ${p.title}\">\n            <img src=\"${p.img}\" alt=\"${p.title}\" loading=\"lazy\" />\n          </div>\n          <figcaption class=\"caption\">${p.title} · <a href=\"${p.link}\">Details</a></figcaption>\n        </figure>
+        <figure class=\"project-card\" data-index=\"${i}\" data-tags=\"${p.tags.join(',')}\">\n          <div class=\"frame tilt\" tabindex=\"0\" aria-label=\"Open ${p.title}\">\n            <img src=\"${p.img}\" alt=\"${p.title}\" loading=\"lazy\" />\n          </div>\n          <figcaption class=\"caption\">${p.title} · <a href=\"${p.link}\" target="_blank">Details</a></figcaption>\n        </figure>
       `).join('');
       attachProjectInteractions();
     }

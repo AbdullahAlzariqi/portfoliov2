@@ -74,6 +74,40 @@
     .topnav a { border: 1px solid var(--border-medium); background: var(--bg-canvas); padding: .25rem .5rem; border-radius: 999px; font-family: var(--font-mono); font-size: var(--size-xs); color: var(--text-secondary); }
     .topnav a:hover { background: var(--accent-highlight); color: var(--text-primary); }
     .topnav a.active { background: var(--text-accent); color:#fff; border-color: transparent; }
+
+    .nav-toggle { display:none; }
+
+    @media (max-width: 600px) {
+      .nav-toggle {
+        display:block;
+        position: fixed;
+        top:.75rem;
+        right:.75rem;
+        z-index:50;
+        border:1px solid var(--border-medium);
+        background: var(--bg-canvas);
+        padding:.25rem .5rem;
+        border-radius: var(--radius-sm);
+        font-family: var(--font-mono);
+        font-size: var(--size-xs);
+        color: var(--text-secondary);
+      }
+      .topnav {
+        display:none;
+        flex-direction: column;
+        align-items:flex-end;
+        background: var(--bg-canvas);
+        padding:.5rem;
+        border:1px solid var(--border-medium);
+        border-radius: var(--radius-sm);
+        box-shadow: var(--shadow-soft);
+        top:2.5rem;
+        right:.75rem;
+        max-width:80vw;
+      }
+      .topnav a { width:100%; text-align:right; }
+      .topnav.open { display:flex; }
+    }
     .prose { background: var(--bg-canvas); border: 1px solid var(--border-light); border-radius: 12px; box-shadow: var(--shadow-paper); padding: var(--space-2xl); margin: 120px auto var(--space-2xl); }
     h1,h2,h3 { font-family: var(--font-headline); line-height: 1.2; }
     h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 0 0 .25rem 0; }
@@ -96,8 +130,9 @@
         <option value="night">Night</option>
       </select>
     </div>
-  </div>
-  <nav class="topnav" aria-label="Quick navigation">
+    </div>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="topnav">Menu</button>
+    <nav class="topnav" id="topnav" aria-label="Quick navigation">
     <a href="index.html#hero">Front Page</a>
     <a href="index.html#about">Feature</a>
     <a href="index.html#projects">Gallery</a>
@@ -133,6 +168,14 @@
       const saved = localStorage.getItem('presscanvas-theme');
       if (saved) { sel.value = saved; applyTheme(saved); }
     })();
+
+    // Mobile nav toggle
+    const topnav = document.querySelector('.topnav');
+    const navToggle = document.querySelector('.nav-toggle');
+    navToggle.addEventListener('click', () => {
+      const open = topnav.classList.toggle('open');
+      navToggle.setAttribute('aria-expanded', open);
+    });
 
     const params = new URLSearchParams(location.search);
     const slug = params.get('slug');

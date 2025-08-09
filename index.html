@@ -228,6 +228,26 @@
     .classified h2 { margin-top: 0; }
     .form { display:grid; gap: .75rem; }
     .input { font-family: var(--font-accent); font-size: var(--size-sm); padding:.6rem .75rem; border:1px solid var(--border-medium); border-radius:8px; background: var(--bg-canvas); color: var(--text-primary); }
+    
+    /* Social Links */
+    .social-links { display: flex; gap: var(--space-sm); align-items: center; flex-wrap: wrap; margin-top: var(--space-lg); padding-top: var(--space-lg); border-top: 1px solid var(--border-light); }
+    .social-link { display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border: var(--border-thin) solid var(--border-medium); border-radius: 50%; background: var(--bg-canvas); color: var(--text-secondary); text-decoration: none; transition: all var(--dur-fast) var(--ease-smooth); box-shadow: var(--shadow-ink); position: relative; overflow: hidden; }
+    .social-link::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at center, var(--text-accent), transparent 70%); opacity: 0; transform: scale(0); transition: all var(--dur-fast) var(--ease-smooth); }
+    .social-link:hover { transform: translateY(-2px); box-shadow: var(--shadow-paper); color: var(--text-primary); border-color: var(--text-accent); }
+    .social-link:hover::before { opacity: 0.1; transform: scale(1); }
+    .social-link svg { width: 1.2rem; height: 1.2rem; z-index: 1; position: relative; transition: transform var(--dur-fast) var(--ease-smooth); }
+    .social-link:hover svg { transform: scale(1.1); }
+    .social-text { font-family: var(--font-mono); font-size: var(--size-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    
+    /* Hero Social Links - Subtle styling */
+    .hero-social { display: flex; gap: var(--space-xs); align-items: center; margin-top: var(--space-lg); }
+    .hero-social-link { display: inline-flex; align-items: center; justify-content: center; width: 1.8rem; height: 1.8rem; color: var(--text-muted); text-decoration: none; transition: all var(--dur-fast) var(--ease-smooth); border-radius: 50%; position: relative; }
+    .hero-social-link::before { content: ""; position: absolute; inset: -4px; border-radius: 50%; background: var(--bg-canvas); opacity: 0; transform: scale(0.8); transition: all var(--dur-fast) var(--ease-smooth); box-shadow: var(--shadow-soft); }
+    .hero-social-link:hover { color: var(--text-accent); transform: translateY(-1px); }
+    .hero-social-link:hover::before { opacity: 1; transform: scale(1); }
+    .hero-social-link svg { width: 1rem; height: 1rem; z-index: 1; position: relative; transition: transform var(--dur-fast) var(--ease-smooth); }
+    .hero-social-link:hover svg { transform: scale(1.1); }
+    .hero-social-divider { width: 1px; height: 1rem; background: var(--border-light); margin: 0 var(--space-xs); }
 
     /* Top navigation */
     .topnav { position: fixed; right: .75rem; top: .75rem; z-index: 40; display: flex; gap: .35rem; flex-wrap: wrap; max-width: 44vw; justify-content: flex-end; }
@@ -277,6 +297,24 @@
       <p class="lede reveal-slide" style="max-width: 60ch;">Designer • Developer • Storyteller. A portfolio staged like a newspaper, set in a quiet gallery. Turn the page and wander.</p>
       <div style="margin-top: var(--space-lg);">
         <a class="btn reveal" href="#projects">View Selected Work →</a>
+        <div class="hero-social reveal-slide">
+          <div class="hero-social-divider"></div>
+          <a href="https://www.linkedin.com/in/abdullah-alzariqi-487428213/" target="_blank" rel="noopener" class="hero-social-link" aria-label="LinkedIn">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+            </svg>
+          </a>
+          <a href="https://github.com/AbdullahAlzariqi" target="_blank" rel="noopener" class="hero-social-link" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+          </a>
+          <a href="https://x.com/ATA5597" target="_blank" rel="noopener" class="hero-social-link" aria-label="X (formerly Twitter)">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </a>
+        </div>
       </div>
     </div>
   </section>
@@ -293,6 +331,7 @@
           <div style="margin-top: var(--space-md); display:flex; gap:.5rem; flex-wrap:wrap;">
             <span class="tag reveal">Design Systems</span>
             <span class="tag reveal">UX Writing</span>
+            <span class="tag reveal">UI Design</span>
             <span class="tag reveal">Wails / Go / React</span>
             <span class="tag reveal">LLM + RAG</span>
           </div>
@@ -323,20 +362,20 @@
       <h2 class="headline reveal ink-spread" style="font-size: clamp(1.8rem, 3.8vw, 3rem);">Editorial Highlights</h2>
       <div class="grid info-grid">
         <div class="info paper-flip">
-          <h3>Design System Craft</h3>
-          <p>Token-driven theming, semantic components, and accessible motion that scales.</p>
+          <h3>Systems with Soul</h3>
+          <p>I design architectures that balance technical precision with human-friendly experiences—scalable, maintainable, and a joy to use.</p>
         </div>
         <div class="info paper-flip">
-          <h3>Research to Pixels</h3>
-          <p>Turn qualitative/quantitative research into interaction patterns and microcopy.</p>
+          <h3>From Idea to Implementation</h3>
+          <p>I turn complex concepts into working solutions—bridging strategy, design, and code without losing sight of the end user.</p>
         </div>
         <div class="info paper-flip">
-          <h3>Local-first & Offline</h3>
-          <p>Patterns for resilience: optimistic UI, sync conflicts, and graceful fallbacks.</p>
+          <h3>Local Power, Global Reach</h3>
+          <p>I build resilient, offline-first systems that work anywhere—fast, secure, and adaptable to any environment.</p>
         </div>
         <div class="info paper-flip">
-          <h3>Search & RAG</h3>
-          <p>Hybrid retrieval, chunking strategies, and transparent AI interactions.</p>
+          <h3>Search & Intelligence</h3>
+          <p>From semantic search to RAG pipelines, I craft retrieval systems that make knowledge accessible, relevant, and transparent.</p>
         </div>
       </div>
     </div>
@@ -348,7 +387,7 @@
       <article class="classified paper-flip" style="max-width: 760px; margin: 0 auto;">
         <h2 class="headline ink-headline" style="font-size: clamp(1.8rem, 3.8vw, 3rem);">Let’s Talk</h2>
         <p class="reveal-slide" style="margin-bottom: var(--space-md);">Available for collaborations, consulting, and product design/dev engagements.</p>
-        <form id="contactForm" class="form" aria-label="Contact form">
+        <form id="contactForm" class="form" aria-label="Contact form" action="https://formspree.io/f/xvgqdoqa" method="POST">
           <input required class="input" name="name" placeholder="Your name" />
           <input required class="input" name="email" placeholder="Email" type="email" />
           <textarea required class="input" name="message" placeholder="Message" rows="4"></textarea>
@@ -357,6 +396,25 @@
             <span id="formStatus" class="caption" aria-live="polite"></span>
           </div>
         </form>
+        
+        <div class="social-links">
+          <span class="social-text">Connect</span>
+          <a href="https://www.linkedin.com/in/abdullah-alzariqi-487428213/" target="_blank" rel="noopener" class="social-link" aria-label="LinkedIn Profile">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+            </svg>
+          </a>
+          <a href="https://github.com/AbdullahAlzariqi" target="_blank" rel="noopener" class="social-link" aria-label="GitHub Profile">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+          </a>
+          <a href="https://x.com/ATA5597" target="_blank" rel="noopener" class="social-link" aria-label="X (formerly Twitter) Profile">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </a>
+        </div>
       </article>
     </div>
   </section>
@@ -456,11 +514,8 @@
     const projects = [
       { title: 'Kalycs — Local-first AI search', tags:['dev','ai','systems'], img:'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1200&auto=format&fit=crop', desc:'Desktop search with hybrid retrieval, summaries, and offline-first patterns.', link:'#' },
       { title: 'Evaluation of RAG Pipelines', tags:['rag','ai'], img:'https://plus.unsplash.com/premium_photo-1678000616480-d4a041e6eba1?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', desc:'Evaluation of RAG pipelines for question answering and retrieval in Governmental services', link:'https://open.metu.edu.tr/handle/11511/113023' },
-      { title: 'Agentic Content Bot — Research & UX', tags:['research','ai','design'], img:'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=1200&auto=format&fit=crop', desc:'Agent behaviors, prompting strategies, and UX for transparency.', link:'#' },
-      { title: 'Desktop App — Wails + React patterns', tags:['dev','systems'], img:'https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=1200&auto=format&fit=crop', desc:'Patterns for cross-platform desktop UI, updates, and packaging.', link:'#' },
       { title: 'PDF Pipeline — Go text extraction', tags:['dev','research'], img:'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop', desc:'Robust parsing, whitespace heuristics, and benchmarking correctness.', link:'https://github.com/AbdullahAlzariqi/pdf'},
-      { title: 'Search UX — Relevance & facets', tags:['design','research'], img:'https://images.unsplash.com/photo-1547658719-da2b51169166?q=80&w=1200&auto=format&fit=crop', desc:'Faceted browse, typo tolerance, and intent-aware ranking.', link:'#' }
-    ];
+     ];
 
     // ===== Render projects =====
     const grid = $('#projectsGrid');
@@ -501,7 +556,17 @@
     function openLightbox(index) {
       currentIndex = index;
       const p = projects[index];
-      lbImg.src = p.img; lbImg.alt = p.title; lbTitle.textContent = p.title; lbDesc.textContent = p.desc; lbLink.href = p.link; lbMeta.textContent = `Tags: ${p.tags.join(', ')}`;
+      lbImg.src = p.img; lbImg.alt = p.title; lbTitle.textContent = p.title; lbDesc.textContent = p.desc; lbMeta.textContent = `Tags: ${p.tags.join(', ')}`;
+      
+      // Handle project link - hide button if no valid link
+      if (p.link && p.link !== '#') {
+        lbLink.href = p.link;
+        lbLink.style.display = 'inline-flex';
+      } else {
+        lbLink.href = '#';
+        lbLink.style.display = 'none';
+      }
+      
       lightbox.classList.add('open');
       lightbox.setAttribute('aria-hidden','false');
       closeBtn.focus();
@@ -546,15 +611,29 @@
       if (e.key === 'ArrowLeft') showDelta(-1);
     });
 
-    // ===== Contact form (demo) =====
+    // ===== Contact form (Formspree) =====
     const form = $('#contactForm');
     const formStatus = $('#formStatus');
-    form.addEventListener('submit', async (e)=>{
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       formStatus.textContent = 'Sending…';
-      await new Promise(r => setTimeout(r, 700));
-      formStatus.textContent = 'Message sent. I\'ll get back to you soon.';
-      form.reset();
+      
+      try {
+        const response = await fetch(form.action, {
+          method: form.method,
+          body: new FormData(form),
+          headers: { 'Accept': 'application/json' }
+        });
+        
+        if (response.ok) {
+          formStatus.textContent = 'Message sent. I\'ll get back to you soon.';
+          form.reset();
+        } else {
+          throw new Error('Form submission failed');
+        }
+      } catch (error) {
+        formStatus.textContent = 'Oops! There was a problem submitting your form.';
+      }
     });
 
   </script>

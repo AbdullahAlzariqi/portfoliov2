@@ -258,13 +258,23 @@
     /* Lightbox */
     .lightbox { position: fixed; inset: 0; background: var(--overlay); display: grid; place-items: center; opacity: 0; visibility: hidden; transition: opacity var(--dur-base) ease, visibility var(--dur-base) ease; z-index: 60; }
     .lightbox.open { opacity: 1; visibility: visible; }
-    .lightbox-dialog { background: var(--bg-canvas); color: var(--text-primary); border-radius: 12px; box-shadow: var(--shadow-paper); width: min(92vw, 980px); max-height: 86vh; overflow: hidden; display: grid; grid-template-rows: auto 1fr auto; border:1px solid var(--border-light); }
+    .lightbox-dialog { background: var(--bg-canvas); color: var(--text-primary); border-radius: 12px; box-shadow: var(--shadow-paper); width: min(92vw, 1200px); max-height: 86vh; overflow: hidden; display: grid; grid-template-rows: auto 1fr auto; border:1px solid var(--border-light); }
     .lightbox-header, .lightbox-footer { padding: .6rem .9rem; border-bottom:1px solid var(--border-light); display:flex; align-items:center; justify-content: space-between; gap:.5rem; }
     .lightbox-footer { border-top:1px solid var(--border-light); border-bottom:none; }
-    .lightbox-body { padding: .75rem .9rem; overflow:auto; }
-    .lightbox img { width: 100%; height: auto; border-radius: 8px; }
+    .lightbox-body { padding: 0; overflow: hidden; display: grid; grid-template-columns: 1fr 1fr; height: 100%; }
+    .lightbox-image { padding: .75rem; display: flex; align-items: center; justify-content: center; background: var(--bg-inset); }
+    .lightbox-content { padding: .75rem .9rem; overflow: auto; display: flex; flex-direction: column; gap: .75rem; }
+    .lightbox img { max-width: 100%; max-height: 100%; height: auto; object-fit: contain; border-radius: 8px; box-shadow: var(--shadow-soft); }
     .iconbtn { background: transparent; border:1px solid var(--border-medium); border-radius:8px; padding:.35rem .55rem; cursor:pointer; color: var(--text-secondary); }
     .iconbtn:hover { background: var(--accent-highlight); color: var(--text-primary); }
+    
+    /* Responsive lightbox */
+    @media (max-width: 900px) {
+      .lightbox-dialog { width: min(95vw, 600px); max-height: 90vh; }
+      .lightbox-body { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+      .lightbox-image { padding: .5rem; }
+      .lightbox-content { padding: .5rem .75rem; }
+    }
   </style>
 </head>
 <body class="theme-newsprint">
@@ -431,8 +441,12 @@
         </div>
       </div>
       <div class="lightbox-body">
-        <img id="lbImg" alt="Project image" />
-        <p id="lbDesc" style="margin:.75rem 0 0; font-family: var(--font-mono); color: var(--text-secondary);"></p>
+        <div class="lightbox-image">
+          <img id="lbImg" alt="Project image" />
+        </div>
+        <div class="lightbox-content">
+          <p id="lbDesc" style="margin:0; font-family: var(--font-mono); color: var(--text-secondary); line-height: 1.6;"></p>
+        </div>
       </div>
       <div class="lightbox-footer">
         <span id="lbMeta" class="caption"></span>
@@ -512,9 +526,9 @@
 
     // ===== Projects data (could be swapped for CMS/JSON) =====
     const projects = [
-      { title: 'Kalycs — Local-first AI search', tags:['dev','ai','systems'], img:'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1200&auto=format&fit=crop', desc:'Desktop search with hybrid retrieval, summaries, and offline-first patterns.', link:'#' },
-      { title: 'Evaluation of RAG Pipelines', tags:['rag','ai'], img:'https://plus.unsplash.com/premium_photo-1678000616480-d4a041e6eba1?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', desc:'Evaluation of RAG pipelines for question answering and retrieval in Governmental services', link:'https://open.metu.edu.tr/handle/11511/113023' },
-      { title: 'PDF Pipeline — Go text extraction', tags:['dev','research'], img:'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop', desc:'Robust parsing, whitespace heuristics, and benchmarking correctness.', link:'https://github.com/AbdullahAlzariqi/pdf'},
+      { title: 'Kalycs — Local-first AI search', tags:['dev','ai','systems'], img:'assets/images/projects/kalycs.png', desc:'Kalycs is a desktop-first search tool that combines hybrid retrieval—mixing keyword and semantic search—for precise and relevant results. It automatically generates concise summaries, helping you grasp key points without opening every file. Designed with an offline-first architecture, it works seamlessly without constant internet access, ensuring speed, privacy, and reliability.', link:'#' },
+      { title: 'Evaluation of RAG Pipelines', tags:['rag','ai'], img:'assets/images/projects/ragEval.png', desc:'This portfolio project evaluates advanced Retrieval-Augmented Generation (RAG) techniques for enhancing question answering in governmental services, using UAE’s MOHAP dataset. The study benchmarks retrievers, embedding models, and LLM generators across metrics like context relevance, answer relevance, groundedness, NDCG\@k, and recall. Through three experimental phases—retriever selection, LLM evaluation, and advanced RAG testing—Astute RAG emerged as the top performer, combining internal LLM knowledge with retrieved context for superior accuracy, especially in complex queries. Findings highlight optimal configurations, trade-offs between performance and computational cost, and recommendations for tiered RAG deployment to balance efficiency and quality in conversational AI solutions for government services.', link:'https://open.metu.edu.tr/handle/11511/113023' },
+      { title: 'PDF Pipeline — Go text extraction', tags:['dev','research'], img:'assets/images/projects/pdfExtract.png', desc:'I identified and resolved a limitation in a popular Go-based PDF processing library that struggled with extracting text from documents with extremely small font sizes, irregular spacing, and layout variations — issues that became especially evident when processing research papers from platforms like arXiv.By forking the library and refining its text parsing logic, I significantly improved its ability to accurately capture text from challenging PDFs, ensuring consistent results across diverse document formats and layouts.', link:'https://github.com/AbdullahAlzariqi/pdf'},
      ];
 
     // ===== Render projects =====

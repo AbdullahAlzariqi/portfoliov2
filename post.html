@@ -10,6 +10,32 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Fira+Sans:wght@300;400;500;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <script>
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init Re Ms Fs Pe Rs Cs capture Ve calculateEventProperties Ds register register_once register_for_session unregister unregister_for_session zs getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey canRenderSurveyAsync identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty Ls As createPersonProfile Ns Is Us opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing is_capturing clear_opt_in_out_capturing Os debug I js getPageViewId captureTraceFeedback captureTraceMetric".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    
+    // Initialize PostHog
+    posthog.init('phc_4Y9RxCs4bQ2WIah1xVjluDkkmsaWAy7n7wsG7K2fkO2', {
+        api_host: 'https://eu.i.posthog.com',
+        capture_pageview: true,
+        capture_pageleave: true,
+        autocapture: true,
+        disable_session_recording: false,
+        enable_recording_console_log: false,
+        person_profiles: 'identified_only'
+    });
+    
+    // Debug PostHog initialization
+    console.log('PostHog initialized:', typeof posthog !== 'undefined');
+    
+    // Track page view manually if needed
+    if (typeof posthog !== 'undefined') {
+        posthog.capture('page_view', {
+            page_title: document.title,
+            page_url: window.location.href,
+            page_type: 'blog_post'
+        });
+    }
+</script>
   <style>
     :root {
       --bg-primary: #FAF9F6; --bg-secondary: #F5F3EE; --bg-canvas: #FFFFFF; --bg-inset: #EFEDE6;
@@ -163,6 +189,14 @@
         const map = { newsprint:'theme-newsprint', sepia:'theme-sepia', night:'theme-night' };
         document.body.classList.add(map[val] || 'theme-newsprint');
         localStorage.setItem('presscanvas-theme', val);
+        
+        // Track theme change
+        if (typeof posthog !== 'undefined') {
+          posthog.capture('theme_changed', {
+            theme: val,
+            page_type: 'blog_post'
+          });
+        }
       };
       sel.addEventListener('change', (e)=> applyTheme(e.target.value));
       const saved = localStorage.getItem('presscanvas-theme');
@@ -175,6 +209,14 @@
     navToggle.addEventListener('click', () => {
       const open = topnav.classList.toggle('open');
       navToggle.setAttribute('aria-expanded', open);
+      
+      // Track mobile menu toggle
+      if (typeof posthog !== 'undefined') {
+        posthog.capture('mobile_menu_toggled', {
+          action: open ? 'opened' : 'closed',
+          page_type: 'blog_post'
+        });
+      }
     });
 
     const params = new URLSearchParams(location.search);
@@ -193,11 +235,35 @@
     }
 
     async function load() {
-      if (!slug) { titleEl.textContent = 'Post not found'; return; }
+      if (!slug) { 
+        titleEl.textContent = 'Post not found'; 
+        
+        // Track post not found
+        if (typeof posthog !== 'undefined') {
+          posthog.capture('blog_post_not_found', {
+            slug: slug,
+            page_type: 'blog_post'
+          });
+        }
+        return; 
+      }
+      
       try {
         const posts = await loadIndex();
         const post = posts.find(p => p.slug === slug);
-        if (!post) { titleEl.textContent = 'Post not found'; return; }
+        if (!post) { 
+          titleEl.textContent = 'Post not found'; 
+          
+          // Track post not found
+          if (typeof posthog !== 'undefined') {
+            posthog.capture('blog_post_not_found', {
+              slug: slug,
+              page_type: 'blog_post'
+            });
+          }
+          return; 
+        }
+        
         titleEl.textContent = post.title || slug;
         metaEl.textContent = [post.date, post.readingTime].filter(Boolean).join(' • ');
         if (post.hero) { heroEl.src = post.hero; heroEl.alt = post.title || ''; heroEl.style.display = 'block'; }
@@ -208,12 +274,99 @@
         const md = await mdRes.text();
         // Render markdown
         contentEl.innerHTML = marked.parse(md);
+        
+        // Track successful blog post load
+        if (typeof posthog !== 'undefined') {
+          posthog.capture('blog_post_loaded', {
+            post_title: post.title,
+            post_slug: slug,
+            post_date: post.date,
+            post_reading_time: post.readingTime,
+            post_tags: post.tags || [],
+            has_hero_image: !!post.hero,
+            page_type: 'blog_post'
+          });
+        }
+        
+        // Track external links in blog content
+        setTimeout(() => {
+          const externalLinks = contentEl.querySelectorAll('a[href^="http"]');
+          externalLinks.forEach(link => {
+            link.addEventListener('click', () => {
+              if (typeof posthog !== 'undefined') {
+                posthog.capture('blog_external_link_clicked', {
+                  post_slug: slug,
+                  post_title: post.title,
+                  link_url: link.href,
+                  link_text: link.textContent.trim(),
+                  page_type: 'blog_post'
+                });
+              }
+            });
+          });
+        }, 100);
+        
       } catch (err) {
         console.error('post:load_error', err);
         titleEl.textContent = 'Error loading post';
+        
+        // Track blog post load error
+        if (typeof posthog !== 'undefined') {
+          posthog.capture('blog_post_load_error', {
+            slug: slug,
+            error: err.message,
+            page_type: 'blog_post'
+          });
+        }
       }
     }
     load();
+    
+    // ===== Additional Event Tracking =====
+    document.addEventListener('DOMContentLoaded', () => {
+      // Track navigation clicks
+      const navLinks = document.querySelectorAll('.topnav a');
+      navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          if (typeof posthog !== 'undefined') {
+            posthog.capture('navigation_clicked', {
+              section: link.textContent.trim(),
+              href: link.getAttribute('href'),
+              page_type: 'blog_post'
+            });
+          }
+        });
+      });
+      
+      // Track tag clicks (if any)
+      document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('tag')) {
+          if (typeof posthog !== 'undefined') {
+            posthog.capture('blog_tag_clicked', {
+              tag: e.target.textContent.trim(),
+              post_slug: slug,
+              page_type: 'blog_post'
+            });
+          }
+        }
+      });
+      
+      // Track scroll depth for blog posts
+      let maxScrollDepth = 0;
+      window.addEventListener('scroll', () => {
+        const scrollPercent = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+        if (scrollPercent > maxScrollDepth && scrollPercent % 25 === 0) { // Track at 25%, 50%, 75%, 100%
+          maxScrollDepth = scrollPercent;
+          if (typeof posthog !== 'undefined') {
+            posthog.capture('blog_scroll_depth', {
+              scroll_percent: scrollPercent,
+              post_slug: slug,
+              page_type: 'blog_post'
+            });
+          }
+        }
+      });
+    });
   </script>
 </body>
 </html>

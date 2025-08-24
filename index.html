@@ -312,11 +312,28 @@
   </style>
   <script>
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init Re Ms Fs Pe Rs Cs capture Ve calculateEventProperties Ds register register_once register_for_session unregister unregister_for_session zs getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey canRenderSurveyAsync identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty Ls As createPersonProfile Ns Is Us opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing is_capturing clear_opt_in_out_capturing Os debug I js getPageViewId captureTraceFeedback captureTraceMetric".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    
+    // Initialize PostHog
     posthog.init('phc_4Y9RxCs4bQ2WIah1xVjluDkkmsaWAy7n7wsG7K2fkO2', {
         api_host: 'https://eu.i.posthog.com',
-        defaults: '2025-05-24',
-        person_profiles: 'identified_only', // or 'always' to create profiles for anonymous users as well
-    })
+        capture_pageview: true,
+        capture_pageleave: true,
+        autocapture: true,
+        disable_session_recording: false,
+        enable_recording_console_log: false,
+        person_profiles: 'identified_only'
+    });
+    
+    // Debug PostHog initialization
+    console.log('PostHog initialized:', typeof posthog !== 'undefined');
+    
+    // Track page view manually if needed
+    if (typeof posthog !== 'undefined') {
+        posthog.capture('page_view', {
+            page_title: document.title,
+            page_url: window.location.href
+        });
+    }
 </script>
 </head>
 <body class="theme-newsprint">
@@ -603,7 +620,20 @@
       });
       filterBtns.forEach(b => b.classList.toggle('active', b.dataset.filter === activeFilter));
     }
-    filterBtns.forEach(btn => btn.addEventListener('click', () => { activeFilter = btn.dataset.filter; applyFilter(); }));
+    filterBtns.forEach(btn => btn.addEventListener('click', () => { 
+      activeFilter = btn.dataset.filter; 
+      
+      // Track filter usage
+      if (typeof posthog !== 'undefined') {
+        const filteredCount = activeFilter === 'all' ? projects.length : projects.filter(p => p.tags.includes(activeFilter)).length;
+        posthog.capture('project_filter_applied', {
+          filter: activeFilter,
+          projects_shown: filteredCount
+        });
+      }
+      
+      applyFilter(); 
+    }));
     applyFilter();
 
     // ===== Lightbox =====
@@ -627,6 +657,16 @@
       if (p.link && p.link !== '#') {
         lbLink.href = p.link;
         lbLink.style.display = 'inline-flex';
+        
+        // Track external link clicks
+        lbLink.addEventListener('click', () => {
+          if (typeof posthog !== 'undefined') {
+            posthog.capture('external_link_clicked', {
+              project_title: p.title,
+              link_url: p.link
+            });
+          }
+        });
       } else {
         lbLink.href = '#';
         lbLink.style.display = 'none';
@@ -651,6 +691,17 @@
       $$('.project-card .frame').forEach(frame => {
         frame.addEventListener('click', (e)=> {
           const idx = +frame.closest('.project-card').dataset.index;
+          const project = projects[idx];
+          
+          // Track project view
+          if (typeof posthog !== 'undefined') {
+            posthog.capture('project_viewed', {
+              project_title: project.title,
+              project_tags: project.tags,
+              project_index: idx
+            });
+          }
+          
           openLightbox(idx);
         });
         frame.addEventListener('keypress', (e)=> { if (e.key === 'Enter') frame.click(); });
@@ -683,6 +734,13 @@
       e.preventDefault();
       formStatus.textContent = 'Sending…';
       
+      // Track form submission
+      if (typeof posthog !== 'undefined') {
+        posthog.capture('contact_form_submitted', {
+          form_id: 'contact_form'
+        });
+      }
+      
       try {
         const response = await fetch(form.action, {
           method: form.method,
@@ -693,12 +751,70 @@
         if (response.ok) {
           formStatus.textContent = 'Message sent. I\'ll get back to you soon.';
           form.reset();
+          
+          // Track successful form submission
+          if (typeof posthog !== 'undefined') {
+            posthog.capture('contact_form_success');
+          }
         } else {
           throw new Error('Form submission failed');
         }
       } catch (error) {
         formStatus.textContent = 'Oops! There was a problem submitting your form.';
+        
+        // Track form error
+        if (typeof posthog !== 'undefined') {
+          posthog.capture('contact_form_error', {
+            error: error.message
+          });
+        }
       }
+    });
+
+    // ===== Social Media Link Tracking =====
+    document.addEventListener('DOMContentLoaded', () => {
+      // Track social media link clicks
+      const socialLinks = document.querySelectorAll('a[href*="linkedin.com"], a[href*="github.com"], a[href*="x.com"], a[href*="twitter.com"]');
+      
+      socialLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          if (typeof posthog !== 'undefined') {
+            const platform = link.href.includes('linkedin.com') ? 'linkedin' :
+                           link.href.includes('github.com') ? 'github' :
+                           link.href.includes('x.com') || link.href.includes('twitter.com') ? 'twitter' : 'other';
+            
+            posthog.capture('social_link_clicked', {
+              platform: platform,
+              link_url: link.href
+            });
+          }
+        });
+      });
+      
+      // Track theme changes
+      const themeSelect = document.getElementById('themeSel');
+      if (themeSelect) {
+        themeSelect.addEventListener('change', () => {
+          if (typeof posthog !== 'undefined') {
+            posthog.capture('theme_changed', {
+              theme: themeSelect.value
+            });
+          }
+        });
+      }
+      
+      // Track navigation clicks
+      const navLinks = document.querySelectorAll('.topnav a');
+      navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          if (typeof posthog !== 'undefined') {
+            posthog.capture('navigation_clicked', {
+              section: link.textContent.trim(),
+              href: link.getAttribute('href')
+            });
+          }
+        });
+      });
     });
 
   </script>

@@ -1,0 +1,12 @@
+/*
+  X-Frame-Options: DENY
+  X-XSS-Protection: 1; mode=block
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# Allow PostHog scripts
+https://eu.i.posthog.com/*
+  Access-Control-Allow-Origin: *
+
+https://eu-assets.i.posthog.com/*
+  Access-Control-Allow-Origin: *
